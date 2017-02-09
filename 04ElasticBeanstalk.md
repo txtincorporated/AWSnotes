@@ -53,7 +53,7 @@
         - *'n' to CodeCommit query for now*
         - 'y' to SSH query to enable login to EC2 server instances in unlikely case manual changes should be necessary; use previously created demo key, s.b. listed as first choice
     1. `cat .gitignore` to confirm additions by `eb` to the effect of  
-        ```bash 
+        ```bash
         # Elastic Beanstalk Files
         .elasticbeanstalk/*
         !.elasticbeanstalk/*.cfg.yml
@@ -83,10 +83,10 @@
   1. Open deployed app in browser:  `eb open dev-helpful-env-name`
   1. Investigate any error messages: `eb logs dev-helpful-env-name`
     - may find 
-    ```bash
-    Rack app error: #<RuntimeError: Missing `secret_token` and `secret_key_base` for
-    'production' environment, set these values in `config/secrets.yml`
-    ```
+      ```bash
+      Rack app error: #<RuntimeError: Missing `secret_token` and `secret_key_base` for
+      'production' environment, set these values in `config/secrets.yml`
+      ```
     - Set production secret_key_base env. variable to remediate this Rails-related issue:
       1. `bundle exec rake secret` to generate `<newkeyvalue>`
       1. `eb setenv SECRET_KEY_BASE=<newkeyvalue> -e dev-helpful-env-name`
