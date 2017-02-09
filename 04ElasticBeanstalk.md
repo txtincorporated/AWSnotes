@@ -52,7 +52,7 @@
         - OK to go w/ default Ruby/Puma platform version
         - *'n' to CodeCommit query for now*
         - 'y' to SSH query to enable login to EC2 server instances in unlikely case manual changes should be necessary; use previously created demo key, s.b. listed as first choice
-    1. `cat .gitignore` to confirm additions by `eb` to the effect of
+    1. `cat .gitignore` to confirm additions by `eb` to the effect of  
         ```bash 
         # Elastic Beanstalk Files
         .elasticbeanstalk/*
@@ -138,6 +138,6 @@
   * **rolling deployment:** in multi-server environments, running the update machine by machine so that there are always instances of the app running and thus no downtime for redeploy; may require adding instances to avoid the service hit from taking machines offline
   * **immutable deployment:** in multi-server environments, creating an entire new ASG with the updated version of the app and then shifting traffic to it from the old version once it is fully tested and ready to go; no downtime, no service hit
   * **IAM:** AWS Identity and Access Management; allows creation of multiple AWS users with various credentials and privileges in order avoid AWS root access except when absolutely necessary as well as for a host of other reasons related to access control in complex multi-user deployment schemes
-  * **User Data:** key in the stackfile accepting as its value shell script strings that will execute on bootup and provision deployment with language-version and server stack selected; **NOTE** that since application software required by environment not embedded in AMI but rather is called by the user data and executes when environment starts up, it slightly slows Elastic Beanstalk deployments transaction times down relative to manual ones; possible to avoid this routine lag by saving this config onto its own AMI for use in future Elastic Beanstalk deployments
+  * **User Data:** key in the stackfile accepting as its value shell script strings that will execute on bootup and provision deployment with language-version and server stack selected; **NOTE** that since application software required by environment not embedded in AMI but rather is called by the user data and executes when environment starts up, it slightly slows Elastic Beanstalk deployments' transaction times down relative to manual ones; possible to avoid this routine lag by saving this config onto its own AMI for use in future Elastic Beanstalk deployments
 
 
