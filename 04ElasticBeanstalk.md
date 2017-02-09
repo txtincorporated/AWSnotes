@@ -53,6 +53,7 @@
         - *'n' to CodeCommit query for now*
         - 'y' to SSH query to enable login to EC2 server instances in unlikely case manual changes should be necessary; use previously created demo key, s.b. listed as first choice
     1. `cat .gitignore` to confirm additions by `eb` to the effect of  
+    
           ```bash
           # Elastic Beanstalk Files
           .elasticbeanstalk/*
