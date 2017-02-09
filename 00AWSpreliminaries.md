@@ -26,7 +26,7 @@
     - **NOTE** that both [a client](https://github.com/brandon-rich-aws-deployment-course/art_gallery) and [an API connection](https://github.com/brandon-rich-aws-deployment-course/cloudformation-demo) repo are available to clone if you'd like to configure along step by step with the tutorial.
 
   1. If configuring the sample repos to follow along with the tutorial: 
-    - **Install the bundle** in Ruby's answer to `npm install` -- running from the Gemfile, Ruby's answer to package.json -- [the `bundle` command](http://bundler.io/v1.14/man/bundle-install.1.html) installs the project dependencies listed in the Gemfile and sets some roles and test script commands.
+    - **Install the bundle:** in Ruby's answer to `npm install` -- running from the Gemfile, Ruby's answer to package.json -- [the `bundle` command](http://bundler.io/v1.14/man/bundle-install.1.html) installs the project dependencies listed in the Gemfile and sets some roles and test script commands.
       - **NOTE, MAC USERS,** that Terminal may not have the `bundle` command installed unless you've already been coding Ruby; if not, run `sudo gem install bundler` and then try running `bundle` again.
       - Be prepared to supply your user password for root access during the bundle install. 
       - Also be prepared to wait for stuff to happen with no feedback as to whether it's actually doing so. 
