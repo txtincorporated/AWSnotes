@@ -84,6 +84,7 @@
   1. Open deployed app in browser:  `eb open dev-helpful-env-name`
   1. Investigate any error messages: `eb logs dev-helpful-env-name`
     - may find 
+    
       ```bash
       Rack app error: #<RuntimeError: Missing `secret_token` and `secret_key_base` for
       'production' environment, set these values in `config/secrets.yml`
