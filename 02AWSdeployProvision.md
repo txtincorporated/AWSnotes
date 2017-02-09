@@ -12,11 +12,11 @@
 
   1. If configuring the sample repos to follow along with the tutorial: 
     - **Install the bundle** in Ruby's answer to `npm install`, running from the Gemfile, Ruby's answer to package.json, the `bundle` command installs the project dependencies listed in the Gemfile and sets some roles and test script commands.
-      - **NOTE, MAC USERS,** that Terminal may not have the `bundle` command installed; if not, run `sudo gem install bundler` and then try running `bundle` again.
+      - **NOTE, MAC USERS,** that Terminal may not have the `bundle` command installed unless you've already been coding Ruby; if not, run `sudo gem install bundler` and then try running `bundle` again.
       - Be prepared to supply your user password for root access during the bundle install. 
       - Also be prepared to wait for stuff to happen with no feedback as to whether it's actually doing so. 
       - **NOTE, INFREQUENT RUBY USERS** that if you run `bundle --verbose` or `bundle install --verbose` you may actually see a log message reading something like
-      ```
+      ```bash
       Building native extensions with: '' 
       This could take a while...
       ```
