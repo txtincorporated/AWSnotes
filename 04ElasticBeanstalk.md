@@ -116,21 +116,130 @@
     1. Still in text editor 
         1. Edit `config/database.yml`: 
           ```yaml
-          production:
-            <<: *default
-            adapter: postgresql
-            encoding: unicode
-            database: <%= ENV['RDS_DB_NAME'] %>
-            username: <%= ENV['RDS_USERNAME'] %>
-            password: <%= ENV['RDS_PASSWORD'] %>
-            host: <%= ENV['RDS_HOSTNAME'] %>
-            port: <%= ENV['RDS_PORT'] %>
+           production:
+             <<: *default
+             adapter: postgresql
+             encoding: unicode
+             database: <%= ENV['RDS_DB_NAME'] %>
+             username: <%= ENV['RDS_USERNAME'] %>
+             password: <%= ENV['RDS_PASSWORD'] %>
+             host: <%= ENV['RDS_HOSTNAME'] %>
+             port: <%= ENV['RDS_PORT'] %>
           
           ```
         1. `git` a-c-p
     1. `eb deploy dev-helpful-env-name`
       1. Once again health transitions to 'Info'
       1. Validate in browser by doing `eb open dev-helpful-env-name` and confirming that previously saved art is no longer being retrieved
+      1. Validate functionality by posting new image file to DB 
+1. **BEANSTALK CONFIGURATION:**
+    - Expand capacity and by adding more instances
+      - Elastic Beanstalk based entirely on auto-scaling...
+      - ...thus need only increase the capacity of autoscaling group
+
+  1. Get started: go to AWS Elastic Beanstalk console 
+  1. Select 'Configuration' and click gear icon at corner of 'Scaling' control-param table 
+
+  1. Expand 'Auto-scaling'
+     - Auto-scaling group's control parameters displayed in selectable/fillable input console view 
+     - Could make same changes directly in EC2 instance console, but not advisably  
+  1. Before proceeding to make changes to ASG params, go back to 'Configuration>Network Tier', click gear icon and look at 'Load Balancing'
+    1. Scroll down to 'Application health check URL'
+    1. **NOTE** that no value has been set 
+    1. Switch to EC2 console and go into 'Load Balancers' 
+    1. Select ELB connected with Beanstalk environment in question  
+    1. Select 'Health Check' tab
+    1. **NOTE** that Ping Target defaults to TCP on port 80 with no way to define a target path 
+        - Any ping sent on TCP will produce a passing health check as long as the response is TCP on port 80, even if that response is an error.
+        - No such problem with HTTP on port 80
+        - ELB will attempt to ping a specified HTTP endpoint
+        - Only a response code <=200 from the path specified will cause health check to pass 
+        - Could set ping target to HTTP on port 80 here, but not advisably for same reasons as previously 
+    1. Switch to Terminal (could also return to Elastic Beanstalk console and do this part, but...)
+        1. `eb config dev-helpful-env-name` -- opens env.yml file in GNU nano
+        1.  Scroll down .yml to `aws:autoscaling:asg:` and find `MinSize` property.
+        1.  Change `MinSize` val to 2 to maintain a minimum of two instances running at any given time.
+        1.  Scroll further down to `aws:elasticbeanstalk:application:`
+        1.  Set Application Health Check URL to `/`
+            - Will cause all subsequent pings to address port 80 using HTTP and request app's root path
+            - Thus eliminates the need to set ping protocol to HTTP anywhere else
+        1. Write-out 
+            - Config change begins with running status messages on command line
+            - Elastic Beanstalk Dashboard shows 'Health' status transitioning as before with status messages displayed in bottom pane 
+            - **NOTE** that any app updates will result in taking down first instance after clone is spun up so until the orig is updated and spun back up you will see a 'Severe' health status in the EB console which you can in this case ignore given that your new instance is already handling all the traffic fine.  Anon you should have two instances purring away and Health Status should go back to OK.
+        1. Still should be able to navigate to your IPv4 Public URL and interact w/ app just fine
+              
+    1. **CONFIRM BOTH INSTANCES ACTUALLY HANDLING TRAFFIC**
+        1. To demonstrate operation of two distinct instances
+          1. Add `require 'socket'` on first line of `app/arts_controller.rb` and, immediately under `def index`, `@hostname = Socket.gethostname`
+              - gets socket and records value as `hostname`
+              - now passable to the view template 
+          1. Add `<%= @hostname %>` to end of `app/views/arts/index.html.erb`
+              - pulls hostname from `app/arts-controller.rb`
+              - does equiv of JS `document.write()` in the DOM, only dynamically
+          1. git a-c-p, and then `eb deploy dev-helpful-env-name` 
+              1. Wait and wait for each instance to go down, update and redeploy. 
+              1. Check EC2 console to confirm both instances running. 
+          1. Navigate to app and check that host IP is displayed at bottom of page 
+              1. Go to ELB URL listed at top of EB Dashboard Overview page.
+              1. Note host IP. 
+              1. Refresh and re-check host IP to confirm both EC2 instances responding in turn.
+              1. How freakin cool is that!
+    1. "Congratulations!" on being the proud owner of an external RDS database and a web tier that talk to each other reliably and can scale out to multiple hosts.
+
+1. **BEANSTALK CUSTOMIZATION:**
+    1. Three ways to customize:
+        1. Custom AMI:  roll up own launch config with desired customizations and set ASG launch config to use it (make sure to base custom AMI on existing Beanstalk instance to guarantee Beanstalk Agent running)
+            - CON:  involved process to get up and running 
+            - PRO:  fastest spinup time for new instances once custom AMI type set up 
+        1. UserData:  place custom shell scripts into this field in stackfile 
+            - CON:  takes a while to write all the necesary scripts 
+            - CON:  slow spinup time as shell scripts compile and run 
+            - PRO:  accessible to ordinary version control 
+            - PRO:  based on EB's already-existing process, so can be done in course of ordinary dev-ops 
+        1. annnd...
+    1. **`.ebextensions` DIRECTORY:** 
+        - Lightweight built-in Beanstalk tool 
+        - Place in app root 
+        - Add to app revision 
+        - Stocked with config files evaluated in alphabetical order 
+        - EXAMPLE:  
+
+        ```yaml 
+         # basic.config
+
+         # default package mgr. for Amazon Linux, installs Samba Client package
+         packages: 
+           yum:
+             samba-client: []
+
+         # define environment variables w/o using eb setenv
+         option_settings: 
+           - option_name: SECRET_KEY_BASE
+             value: 1234
+
+         # any needed commands; will be executed alphabetically
+         container_commands:
+           01deploy:
+             command: rake db:seed
+           02deploy:
+             command: some_command.sh
+        ``` 
+
+        - **NOTE** that `packages` also supports Python, RBM and RubyGems; demo app uses Bundler and a Gemfile instead 
+        - If placed in `.ebextensions`, will configure each new instance added to environment
+        - **NOTE** other sections that can go into a `.ebextensions` file:
+            - `users`:  create user accounts on the box
+            - `groups`:  create user groups on the box
+            - `sources`:  unpack .zip files
+            - `files`:  create files from inline text or fetch from URL
+            - `services`:  manage `ntp` and other UNIX services
+1. **BEANSTALK TEARDOWN:**
+    1. EB 'Dashboard>Actions>Delete Application'
+        - Removes all infrastructure associated with app, including ASG
+    1. RDS 'Dashboard>DB Instances' 
+        1. Check RDS instance for app in question and click 'Instance Actions'
+        1. Select 'Delete' and 'Create final Snapshot' at next screen if desired
 
 #### TERMS & CONCEPTS
   * **AWS Elastic Beanstalk (EB):**  Amazon's application platform as a service, automating CloudFormation setup of AWS stacks for app deployment and provisioning
