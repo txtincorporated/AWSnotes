@@ -5,7 +5,7 @@
 
 #### QUESTIONS & COMMENTS
 1. **NOTE** strong contrast between OpsWorks and Elastic Beansatalk
-    - EB heavily prescriptive; predefined infrastructure choices; as PaaS, takes care of more of the stack decisions for you
+    - EB heavily prescriptive; predefined infrastructure choices;   as PaaS, takes care of more of the stack decisions for you
     - OpsWorks allows granular control in describing your architecture
 1. **HOW** is OpsWorks set up to work?
     - Define stack in given region; just a container for the app to be built
