@@ -34,7 +34,7 @@
     - `eb --version` to confirm path is set
   1. Initialize EB app using EBCLI:  
     1. navigate to app root (in this tutorial, `/your/path/to/art_gallery`) 
-    1. do `eb init` and set region (us-west-2 is default, so if you're in Oregon, just hit return)
+    1. do `eb init -i` and set region (us-west-2 is default, so if you're in Oregon, just hit return)
     1. on security prompt, in AWS console go to Your Name>Security Credentials
     1. click 'Get Started With IAM Users' to set up a new IAM user and avoid working in AWS root
     1. click 'Add User'
