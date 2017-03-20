@@ -102,8 +102,7 @@
           ./install auto
         ```
     1. Click "Next: Add Storage", accept defaults and click "Next: Configure Security Group".
-    1. Click "Select an existing security group" and choose the one allowing HTTP/SSH traffic from the world on ports 80/22 respectively.
-      - **NOTE** that this configuration is insecure and appropriate only for demo purposes; in production HTTPS with a secure cert would be required.
+    1. Click "Select an existing security group" and choose the one allowing HTTP/SSH traffic from the world on ports 80/22 respectively, but **NOTE** that this configuration is insecure and appropriate only for demo purposes; in production HTTPS with a secure cert would be required.
     1. Click "Review" and ignore warning with deference to foregoing **NOTE.**
     1. Click "Create and launch configuration", select previously used private key and click "Create launch configuration".
     1. Click "Create an Autoscaling Group using this launch configuration".
