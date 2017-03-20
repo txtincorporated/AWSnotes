@@ -157,6 +157,15 @@
     1. Add server name printout to DOM template in app as in previous tutorial and navigate to app by clicking public IP the ELB's "Layers" console display.
     1. Reload page a few times to see individual host names change.
 1. **OPSWORKS TEARDOWN** 
+  1. **STOP AND DELETE INSTANCES**
+    1. Click into OpsWorks console and then into GUI for stack you wish to delete.
+    1. Click into instances UI for the stack (l.hand menu), hit "Stop All Instances" button; confirm when prompted, and wait for all hosts to stop.
+    1. **NOTE** that instances will no longer incur charges, but also may now be deleted as desired; to do so, click "Delete" and then confirm at prompt.
+  1. **DELETE APP:** Click "Apps" in l.hand menu and then "delete" in app's table row; confirm at prompt to complete removal.
+  1. **DELETE STACK:**  Click back to OpsWorks main console and click "delete" in table row for stack; confirm at prompt, etc.
+  1. **DELETE RDS INSTANCE AS DESIRED:**
+    1.  Navigate into RDS console and click either "Instances" in l.hand menu or "DB Instances" in middle of page.
+    1.  Check checkbox in RDS table row and then select "Delete" from "Instance Actions" pulldown above table; confirm at prompt (may select "No" for final snapshot, as this data is not significant).
 
 
 #### TERMS & CONCEPTS
@@ -181,8 +190,7 @@
          - ...defines layers in relation not of one-to-one but of many-to-one, each 
          - ...executing at a specific time in OW lifecycle (see above)  
       - Ansible
-      - Each provides a dsl for compile, filestore, user-signup and permissions ops 
+      - Each provides a dsl for compile, filestore, user-registration and permissions ops 
       - Created and maintained as user-owned open-source 
-      - 
 
 
