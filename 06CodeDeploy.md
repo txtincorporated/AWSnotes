@@ -36,20 +36,21 @@
   1. Hooks:  see above
   1. Files:  move files around
   1. Permissions:  set file permissions
-  1. **NOTE** that Files and Permissions functionality could also be folded into Hooks scripts but are more intuitive for, e.g., users and fellow devs if broken out into their own sections
-  1. EXAMPLE:
-  ```YAML
-    version: 0.0
+  1. **NOTE** that Files and Permissions functionality could also be folded into Hooks scripts but are more intuitive for, e.g., users and fellow devs if broken out into their own sections.
 
-    os: linux
-    files:
-      - source: codedeploy/config/nginx.conf
-        destination: /etc/nginx
-    hooks:
-      BeforeInstall:
-        - location: codedeploy/scripts/install_dependencies.sh
-      AfterInstall:
-        - location: codedeploy/scripts/start_web_server.sh
+  1. **EXAMPLE:** 
+  ```yml
+      ---
+      version: 0.0
+      os: linux
+      files:
+        - source: codedeploy/config/nginx.conf
+          destination: /etc/nginx
+      hooks:
+        BeforeInstall:
+          - location: codedeploy/scripts/install_dependencies.sh
+        AfterInstall:
+          - location: codedeploy/scripts/start_web_server.sh
   ```
   **NOTE** that `version` and `os` keys are required
   **ALSO NOTE** that the `nginx.conf` file, which in this tutorial configures the NGINX instance once moved into `/etc/nginx`, must in order to do so be present to begin with in the app's `S3` folder or Git remote
@@ -90,16 +91,16 @@
        - `-y` flags must be added to commands after which prompts may be returned, i.e., `yum update`, `yum install ruby` and, presumably, `yum install wget`
        - **ALSO NOTE** that tutorial shows script installing aws-cli, while current docs show wget instead, although tutorial does include the `wget` command used to fetch the code from S3
        - **TUTORIAL EXAMPLE:**
-       ```bash
-        #!/bin/bash
-        yum -y update
-        yum -y install ruby
-        yum -y install aws-cli
-        cd /home/ec2-user
-        wget https://aws-codedeploy-us-west-2.s3.amazonaws.com/latest/install
-        chmod +x ./install
-        ./install auto
-       ```
+        ```bash
+          #!/bin/bash
+          yum -y update
+          yum -y install ruby
+          yum -y install aws-cli
+          cd /home/ec2-user
+          wget https://aws-codedeploy-us-west-2.s3.amazonaws.com/latest/install
+          chmod +x ./install
+          ./install auto
+        ```
     1. Click "Next: Add Storage", accept defaults and click "Next: Configure Security Group".
     1. Click "Select an existing security group" and choose the one allowing HTTP/SSH traffic from the world on ports 80/22 respectively.
       - **NOTE** that this configuration is insecure and appropriate only for demo purposes; in production HTTPS with a secure cert would be required.
@@ -134,44 +135,44 @@
     1. `aws iam get-user` to verify; output should display your correct AWS username.
   1. **APPSPEC & DEPLOY** 
     1. **DEMO `appspec.yml`:**
-    ```yml
-        ---
-        version: 0.0
-        os: linux
-        files:
-          - source: codedeploy/config/ruby-codedeploy-demo-nginx.conf
-            destination: /etc/nginx/conf.d
-          - source: codedeploy/config/nginx.conf
-            destination: /etc/nginx
-        hooks:
-          BeforeInstall:
-            - location: codedeploy/scripts/stop_unicorn.sh
-              runas: root 
-            - location: codedeploy/scripts/configure_nginx.sh
-            - location: codedeploy/scripts/install_dependencies.sh
-          AfterInstall:
-            - location: codedeploy/scripts/start_unicorn.sh
-              runas: root 
-            - location: codedeploy/scripts/start_nginx.sh
-              runas: root 
-    ```
-      - `files` section moves two files as indicated
-      - `hooks` section specifies location and runtime instructions for three scripts to run before installation and two to run after
+      ```yml
+          ---
+          version: 0.0
+          os: linux
+          files:
+            - source: codedeploy/config/ruby-codedeploy-demo-nginx.conf
+              destination: /etc/nginx/conf.d
+            - source: codedeploy/config/nginx.conf
+              destination: /etc/nginx
+          hooks:
+            BeforeInstall:
+              - location: codedeploy/scripts/stop_unicorn.sh
+                runas: root 
+              - location: codedeploy/scripts/configure_nginx.sh
+              - location: codedeploy/scripts/install_dependencies.sh
+            AfterInstall:
+              - location: codedeploy/scripts/start_unicorn.sh
+                runas: root 
+              - location: codedeploy/scripts/start_nginx.sh
+                runas: root 
+      ```
+        - `files` section moves two files as indicated
+        - `hooks` section specifies location and runtime instructions for three scripts to run before installation and two to run after
     1. **NOTE** how `codedeploy/scripts/configure_nginx.sh:4` sets up symlink using env vars `$DEPLOYMENT_GROUP_ID` and `$DEPLOYMENT_ID` to ensure consistent app root location across deployments where actual deploy folder will change each time
         - Could have written dynamic script to locate actual folder
         - Symlink simpler and more direct, allows use of single pathname, `/opt/current-deployment`, as app root in `codedeploy/config/ruby-codedeploy-demo-nginx.conf`, thus simplifying tracking
     1. **DEPLOY APP**
       1. **NOTE** AWS-CLI command for CodeDeploy, `aws deploy` (EC2 is `aws ec2`, etc.; only Elastic Beanstalk missing, as EB has its own CLI)
       1. **DEMO DEPLOY SCRIPT:**
-      ```sh
-        #deploy.sh
-        aws deploy create-deployment \ 
-          --application-name cd_artgall_app \ 
-          --deployment-config-name CodeDeployDefault.OneAtATime \ 
-          --deployment-group-name cd_artgall_deployment_group \ 
-          --description "CodeDeploy demo" \ 
-          --github-location repository=txtincorporated/AWSdemo,commitId=$(git rev-parse HEAD)
-      ```
+        ```sh
+          #deploy.sh
+          aws deploy create-deployment \ 
+            --application-name cd_artgall_app \ 
+            --deployment-config-name CodeDeployDefault.OneAtATime \ 
+            --deployment-group-name cd_artgall_deployment_group \ 
+            --description "CodeDeploy demo" \ 
+            --github-location repository=txtincorporated/AWSdemo,commitId=$(git rev-parse HEAD)
+        ```
         1. **NOTE** that at this point to deploy from a specific branch will require setting that br. as the default either in the cli or on GH; CodePipeline integration below will take care of this in the AWS UI.
         1. To make executable run `chmod +x deploy.sh`
         1. `./deploy.sh` to run
