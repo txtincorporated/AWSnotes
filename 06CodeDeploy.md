@@ -134,7 +134,8 @@
     1. `aws iam get-user` to verify; output should display your correct AWS username.
   1. **APPSPEC & DEPLOY** 
     1. **DEMO `appspec.yml`:**
-    ```javascript
+    ```yml
+        ---
         version: 0.0
         os: linux
         files:
@@ -163,13 +164,85 @@
       1. **NOTE** AWS-CLI command for CodeDeploy, `aws deploy` (EC2 is `aws ec2`, etc.; only Elastic Beanstalk missing, as EB has its own CLI)
       1. **DEMO DEPLOY SCRIPT:**
       ```sh
+        #deploy.sh
         aws deploy create-deployment \ 
-         --application-name cd_artgall_app \ 
-         --deployment-config-name CodeDeployDefault.OneAtATime \ 
-         --deployment-group-name cd_artgall_deployment_group \ 
-         --description "CodeDeploy demo" \ 
-         --github-location repository=txtincorporated/AWSdemo,commit-Id=$(git rev-parse HEAD)
+          --application-name cd_artgall_app \ 
+          --deployment-config-name CodeDeployDefault.OneAtATime \ 
+          --deployment-group-name cd_artgall_deployment_group \ 
+          --description "CodeDeploy demo" \ 
+          --github-location repository=txtincorporated/AWSdemo,commitId=$(git rev-parse HEAD)
       ```
+        1. **NOTE** that at this point to deploy from a specific branch will require setting that br. as the default either in the cli or on GH; CodePipeline integration below will take care of this in the AWS UI.
+        1. To make executable run `chmod +x deploy.sh`
+        1. `./deploy.sh` to run
+        1. Returns, e.g., 
+          ```sh
+            {
+                "deploymentId": "d-0UQFKYC8L"
+            }
+          ``` 
+            on success.
+      1. **VERIFY DEPLOYMENT** by navigating back to CodeDeploy console and clicking into application.
+      1. Examine more closely by selecting "AWS CodeDeploy>Deployments" at top of console view.
+        1. Click "Deployment ID" to see details.
+        1. Click "View Events" in given instance's display table row for a play-by-play recap of the deployment lifecycle events.
+      1. **VERIFY APP** as usual: public IP of EC2 instance in browser nav.
+  1. **INTEGRATE CODEPIPELINE FEATURES**
+    1. Navigate to CodePipeline under "Services>Developer Tools" and click "Get Started" to step through wizard.
+    1. Helpful name, blah-blah, click "Next step".
+    1. Select GitHub from dropdown list of sources, and then click "Connect to GitHub".
+    1. The usual GH interface opens in new tab; do your thing.
+    1. Back in CodePipeline, select repo and branch from newly-hatched pulldowns.
+    1. "Next step" and then "Next step" again to skip build provider selection, since there is none in this tutorial.
+    1. Select "AWS CodeDeploy" as deployment provider; app and deployment names from pulldowns, and then "Next step".
+    1. If no pre-existing role defined for CodePipeline, click "Create role" and then "Allow" to accept pre-filled defaults; "Next step".
+    1. Review and then click "Create pipeline".
+    1. Confirm by pushing a change to selected deployment branch.
+      1. Monitor progress in CodePipeline console.
+      1. Once change propagates from "Source" to "Beta", verify in browser.
+  1. **TROUBLESHOOT CODEDEPLOY** 
+    1. Problems with instances hardest to do, as they just time out w/o any error
+      1. Check for Agent install?
+        1. SSH into instance and do `sudo service codedeploy-agent status`.
+        1. See above for desired confirmation log message.
+      1. Agent running?  May be worth a quick double-check
+      1. Check S3 access?  Even when deploying from GitHub, CodeDeploy first has to stage it through S3.
+      1. Correct app revision?
+        1. Check appspec.yml for errors:  
+          1. present and accounted for?
+          1. YAML syntax?
+          1. Spelling and caps in hook names?
+        1. Check commit history for correct revision and confirm it was pushed.
+          1. Correct commit ID?
+          1. All changes pushed?
+        1. Check for script errors.
+          1. Correct privileges?
+          1. Correct dependencies?
+      1. Consult logs on host where deployment is failing.
+        1. SSH in.
+        1. Check out following locations:
+          1. `/var/log/aws/codedeploy-agent`
+          1. `/opt/codedeploy-agent/deployment-root/deployment-logs`
+  1. **CODEDEPLOY TEARDOWN** 
+    1. Navigate into CD and click on application.
+    1. Click "Delete application" at bottom of page.
+      - **BUT NOTE** that this will not delete any running instances.
+      - Confirm name and click "Delete" in modal dialogue.
+    1. Navigate into CodePipeline console, click into the deployment and click the gray "Edit" button.
+    1. Click "Delete" and follow same confirmation procedure as before.
+    1. Back in EC2 Dashboard, click into "Autoscaling Groups" in l.hand menu.
+    1. Checkbox ASG created earlier and then choose "Delete" from pulldown at top of table.
+  1. **S3 TEARDOWN**
+    1. Navigate into S3 console.
+    1. For CloudFormation templates bucket, right-click (or whatever it is you do on your planet) on bucket name and select "Delete Bucket".
+    1. Enter name and click "Delete".
+    1. For EB and CP buckets, an extra step:
+      1. Click magnifying glass to left of bucket name.
+      1. Click "Permissions" in r.hand pane, next "Edit Bucket Policy", and finally "Delete" in modal window that comes up.
+      1. Now right-click and delete bucket as before. 
+      
+      
+
 
 #### TERMS & CONCEPTS
   * **application:**  in CodeDeploy terms, start by definining application, which refers to a...
