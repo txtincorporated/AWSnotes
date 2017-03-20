@@ -162,7 +162,7 @@
     1. **DEPLOY APP**
       1. **NOTE** AWS-CLI command for CodeDeploy, `aws deploy` (EC2 is `aws ec2`, etc.; only Elastic Beanstalk missing, as EB has its own CLI)
       1. **DEMO DEPLOY SCRIPT:**
-      ```bash
+      ```unix
         aws deploy create-deployment \ 
          --application-name cd_artgall_app \ 
          --deployment-config-name CodeDeployDefault.OneAtATime \ 
