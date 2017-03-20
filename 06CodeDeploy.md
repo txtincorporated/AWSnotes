@@ -133,8 +133,43 @@
     1. At next prompt, set, e.g., `json` as default output format.
     1. `aws iam get-user` to verify; output should display your correct AWS username.
   1. **APPSPEC & DEPLOY** 
-    1. 
-
+    1. **DEMO `appspec.yml`:**
+    ```javascript
+        version: 0.0
+        os: linux
+        files:
+          - source: codedeploy/config/ruby-codedeploy-demo-nginx.conf
+            destination: /etc/nginx/conf.d
+          - source: codedeploy/config/nginx.conf
+            destination: /etc/nginx
+        hooks:
+          BeforeInstall:
+            - location: codedeploy/scripts/stop_unicorn.sh
+              runas: root 
+            - location: codedeploy/scripts/configure_nginx.sh
+            - location: codedeploy/scripts/install_dependencies.sh
+          AfterInstall:
+            - location: codedeploy/scripts/start_unicorn.sh
+              runas: root 
+            - location: codedeploy/scripts/start_nginx.sh
+              runas: root 
+    ```
+      - `files` section moves two files as indicated
+      - `hooks` section specifies location and runtime instructions for three scripts to run before installation and two to run after
+    1. **NOTE** how `codedeploy/scripts/configure_nginx.sh:4` sets up symlink using env vars `$DEPLOYMENT_GROUP_ID` and `$DEPLOYMENT_ID` to ensure consistent app root location across deployments where actual deploy folder will change each time
+        - Could have written dynamic script to locate actual folder
+        - Symlink simpler and more direct, allows use of single pathname, `/opt/current-deployment`, as app root in `codedeploy/config/ruby-codedeploy-demo-nginx.conf`, thus simplifying tracking
+    1. **DEPLOY APP**
+      1. **NOTE** AWS-CLI command for CodeDeploy, `aws deploy` (EC2 is `aws ec2`, etc.; only Elastic Beanstalk missing, as EB has its own CLI)
+      1. **DEMO DEPLOY SCRIPT:**
+      ```bash
+        aws deploy create-deployment \ 
+         --application-name cd_artgall_app \ 
+         --deployment-config-name CodeDeployDefault.OneAtATime \ 
+         --deployment-group-name cd_artgall_deployment_group \ 
+         --description "CodeDeploy demo" \ 
+         --github-location repository=txtincorporated/AWSdemo,commit-Id=$(git rev-parse HEAD)
+      ```
 
 #### TERMS & CONCEPTS
   * **application:**  in CodeDeploy terms, start by definining application, which refers to a...
